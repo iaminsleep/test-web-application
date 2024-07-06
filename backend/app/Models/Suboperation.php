@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
-
+use App\Models\Operation;
 use App\Models\Suboperation;
 use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Suboperation extends Model
 {
@@ -20,10 +20,12 @@ class Suboperation extends Model
     protected $keyType = 'string'; // Определяем тип ключа
     public $incrementing = false; // Отключаем автоинкремент
 
-    protected $fillable = ['operation_uuid', 'number', 'name'];
+    protected $fillable = ['uuid', 'operation_uuid', 'number', 'name', 'created_at', 'updated_at'];
 
-    public function operation()
+    protected $dates = ['deleted_at'];
+
+    public function operation(): \Illuminate\Database\Eloquent\Relations\belongsTo
     {
-        return $this->belongsTo(Operation::class);
+        return $this->belongsTo(Operation::class, 'operation_uuid', 'uuid');
     }
 }

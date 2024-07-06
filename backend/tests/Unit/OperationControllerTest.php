@@ -3,9 +3,12 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use App\Models\Operation;
 use App\Models\Suboperation;
+
 use Illuminate\Support\Str;
 
 class OperationControllerTest extends TestCase
@@ -27,18 +30,11 @@ class OperationControllerTest extends TestCase
 
     public function testStore()
     {
-        $operationUUID = Str::uuid();
-
         // Arrange
         $data = [
             'number' => 1,
             'name' => 'Test Operation',
         ];
-
-        // 'suboperations' => [
-        //         ['name' => 'Suboperation 1', 'operation_uuid' => $operationUUID],
-        //         ['name' => 'Suboperation 2', 'operation_uuid' => $operationUUID]
-        //     ]
 
         // Act
         $response = $this->postJson('/api/operations', $data);
@@ -47,9 +43,6 @@ class OperationControllerTest extends TestCase
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('operations', ['name' => 'Test Operation']);
-
-        // $this->assertDatabaseHas('suboperations', ['name' => 'Suboperation 1']);
-        // $this->assertDatabaseHas('suboperations', ['name' => 'Suboperation 2']);
     }
 
     public function testShow()
@@ -79,7 +72,7 @@ class OperationControllerTest extends TestCase
         $this->assertDatabaseHas('operations', ['name' => 'Updated Operation']);
     }
 
-    public function testDestroy()
+    public function testSoftDestroy()
     {
         // Arrange
         $operation = Operation::factory()->create();
@@ -90,5 +83,18 @@ class OperationControllerTest extends TestCase
         // Assert
         $response->assertStatus(204);
         $this->assertSoftDeleted('operations', ['uuid' => $operation->uuid]);
+    }
+
+    public function testForceDestroy()
+    {
+        // Arrange
+        $operation = Operation::factory()->create();
+
+        // Act
+        $response = $this->deleteJson("/api/operations/{$operation->uuid}/force");
+
+        // Assert
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing('operations', ['uuid' => $operation->uuid]);
     }
 }

@@ -2,51 +2,72 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\OperationDTO;
+
 use App\Models\Operation;
 
-use Illuminate\Http\Request;
-
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\JsonResponse;
 
 class OperationController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        return Operation::all();
+        $operations = Operation::with('suboperations')->get();
+        return response()->json($operations);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'number' => [
-                'required',
-                'integer',
-                'min:1',
-                Rule::unique('operations')->where(function ($query) {
-                    return $query->whereNull('deleted_at'); // Поле number должно быть уникальным в таблице operations, исключая записи с ненулевым значением deleted_at (для учета soft delete).
-                }),
-            ],
             'name' => 'required|string|max:255',
         ]);
 
         // После валидации создаем новую операцию
-        $operation = new Operation();
-        $operation->uuid = Str::uuid();
-        $operation->number = $validated['number'];
-        $operation->name = $validated['name'];
-        $operation->save();
 
-        // Возвращаем успешный ответ
-        return response()->json($operation, 201);
+        $operation = Operation::create([
+            'uuid' => (string) Str::uuid(),
+            'number' => $request->number,
+            'name' => $request->name,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Filling the DTO with data from the request
+        $operationDTO = new OperationDTO([
+            'uuid' => $operation->uuid,
+            'number' => $operation->number,
+            'name' => $operation->name,
+            'created_at' => $operation->created_at->toDateTimeString(),
+            'updated_at' => $operation->updated_at->toDateTimeString(),
+            'deleted_at' => $operation->deleted_at ? $operation->deleted_at->toDateTimeString() : null,
+        ]);
+
+        return response()->json($operationDTO, 201);
     }
 
-    public function show($uuid)
+    /**
+     * Получить операцию по UUID.
+     *
+     * @param  string  $uuid
+     * @return JsonResponse
+     */
+    public function show(string $uuid): JsonResponse
     {
-        return Operation::findOrFail($uuid);
+        $operation = Operation::with('suboperations')->findOrFail($uuid);
+        return response()->json($operation);
     }
 
-    public function update(Request $request, $uuid)
+    /**
+     * Обновить операцию.
+     *
+     * @param  Request  $request
+     * @param  string  $uuid
+     * @return JsonResponse
+     */
+    public function update(Request $request, string $uuid): JsonResponse
     {
         $operation = Operation::findOrFail($uuid);
 
@@ -65,16 +86,46 @@ class OperationController extends Controller
         // Обновляем операцию
         $operation->update($validated);
 
+        $operationDTO = new OperationDTO($operation->toArray());
+
         // Возвращаем успешный ответ
-        return response()->json($operation, 200);
+        return response()->json($operationDTO, 200);
 
     }
 
-    public function destroy($uuid)
+    /**
+     * Удалить операцию мягко.
+     *
+     * @param  string  $uuid
+     * @return JsonResponse
+     */
+    public function destroy(string $uuid): JsonResponse
     {
-        $operation = Operation::findOrFail($uuid);
-        $operation->delete();
+        $operation = Operation::with('suboperations')->findOrFail($uuid);
 
+        if ($operation->suboperations()->withTrashed()->count() > 0) {
+            return response()->json(['error' => 'Operation cannot be permanently deleted because it has suboperations'], 400);
+        }
+
+        $operation->delete(); // Perform soft delete instead of force delete
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Удалить операцию полностью.
+     *
+     * @param  string  $uuid
+     * @return JsonResponse
+     */
+    public function forceDestroy(string $uuid): JsonResponse
+    {
+        $operation = Operation::with('suboperations')->findOrFail($uuid);
+
+        if ($operation->suboperations()->withTrashed()->count() > 0) {
+            return response()->json(['error' => 'Operation cannot be permanently deleted because it has suboperations'], 400);
+        }
+
+        $operation->forceDelete(); // Perform hard delete
         return response()->json(null, 204);
     }
 }

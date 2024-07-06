@@ -19,10 +19,19 @@ class OperationFactory extends Factory
     {
         return [
             'uuid' => Str::uuid(),
-            'number' => $this->faker->unique()->numberBetween(1, 100),
+            'number' => $this->generateUniqueNumber(Operation::class),
             'name' => $this->faker->word,
             'created_at' => now(),
             'updated_at' => now(),
         ];
+    }
+
+    private function generateUniqueNumber($modelClass)
+    {
+        do {
+            $number = $this->faker->unique()->numberBetween(1, 1000);
+        } while ($modelClass::where('number', $number)->exists());
+
+        return $number;
     }
 }

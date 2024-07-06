@@ -20,6 +20,20 @@ return [
 
     'default' => env('LOG_CHANNEL', 'stack'),
 
+    'testing' => [
+        'driver' => 'single',
+        'path' => storage_path('logs/testing.log'),
+        'level' => 'debug',
+    ],
+
+    'console' => [
+        'driver' => 'monolog',
+        'handler' => Monolog\Handler\StreamHandler::class,
+        'with' => [
+            'stream' => 'php://stdout',
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Deprecations Log Channel
