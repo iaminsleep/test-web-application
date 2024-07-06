@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use App\Models\Operation;
-use App\Models\Suboperation;
-use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Support\Str;
+use App\Models\Suboperation;
+
+use App\Events\UniversalModelEvent;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -27,5 +28,19 @@ class Operation extends Model
     public function suboperations(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Suboperation::class, 'operation_uuid', 'uuid');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($operation) {
+            if (is_null($operation->uuid)) {
+                $operation->uuid = Str::uuid();
+            }
+            if (is_null($operation->number)) {
+                $operation->number = Operation::max('number') + 1;
+            }
+        });
     }
 }

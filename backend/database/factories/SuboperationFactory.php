@@ -27,7 +27,7 @@ class SuboperationFactory extends Factory
         return [
             'uuid' => Str::uuid(),
             'operation_uuid' => $operation->uuid,
-            'number' => 1, // Default number, will be overwritten in bulk creation
+            'number' => null, // Default number, will be overwritten in bulk creation
             'name' => $this->faker->word,
             'created_at' => now(),
             'updated_at' => now(),

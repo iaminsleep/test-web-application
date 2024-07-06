@@ -38,7 +38,7 @@ class SuboperationController extends Controller
         $suboperation = Suboperation::create([
             'uuid' => (string) Str::uuid(),
             'operation_uuid' => $operationUuid,
-            'number' => $this->generateUniqueNumberForOperation($operation->uuid),
+            'number' => $this->generateUniqueNumberForOperation($operationUuid),
             'name' => $request->name,
         ]);
 

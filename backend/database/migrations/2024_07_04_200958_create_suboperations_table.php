@@ -15,10 +15,12 @@ return new class () extends Migration {
 
             $table->uuid('operation_uuid');
             $table->foreign('operation_uuid')->references('uuid')->on('operations')->onDelete('cascade');
-            $table->integer('number')->unique();
+            $table->integer('number');
 
             $table->string('name');
             $table->timestamps();
+
+            $table->unique(['operation_uuid', 'number']);
 
             $table->softDeletes();
         });

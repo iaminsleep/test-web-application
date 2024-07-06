@@ -28,4 +28,19 @@ class Suboperation extends Model
     {
         return $this->belongsTo(Operation::class, 'operation_uuid', 'uuid');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($suboperation) {
+            if (is_null($suboperation->uuid)) {
+                $suboperation->uuid = Str::uuid();
+            }
+            if (is_null($suboperation->number)) {
+                $maxNumber = Suboperation::where('operation_uuid', $suboperation->operation_uuid)->max('number');
+                $suboperation->number = $maxNumber ? $maxNumber + 1 : 1;
+            }
+        });
+    }
 }
