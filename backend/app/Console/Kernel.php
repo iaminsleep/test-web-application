@@ -5,8 +5,9 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 
 use App\Console\Commands\GenerateOperations;
-use App\Console\Commands\DeleteAllOperations;
+use App\Console\Commands\PaginateOperations;
 
+use App\Console\Commands\DeleteAllOperations;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -32,5 +33,6 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         GenerateOperations::class,
         DeleteAllOperations::class,
+        PaginateOperations::class,
     ];
 }

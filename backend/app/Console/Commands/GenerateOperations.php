@@ -18,53 +18,47 @@ class GenerateOperations extends Command
         $startTime = microtime(true);
         $this->info('Starting to generate operations...');
 
-        DB::transaction(function () {
-            $operations = [];
-            $suboperations = [];
-            $operationNumber = Operation::max('number') + 1;
+        $batchSize = 100; // Adjust batch size to fit within memory limits
 
-            for ($i = 0; $i < 100000; $i++) {
-                $operationUuid = Str::uuid();
-                $operations[] = [
-                    'uuid' => $operationUuid,
-                    'number' => $operationNumber++,
-                    'name' => Str::random(rand(4, 10)),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+        DB::transaction(function () use ($batchSize) {
+            $operationNumber = 1;
 
-                $suboperationsCount = rand(1, 10);
-
-                for ($j = 1; $j <= $suboperationsCount; $j++) {
-                    $suboperations[] = [
+            // Step 1: Generate and insert operations in batches
+            for ($i = 0; $i < 100000; $i += $batchSize) {
+                $operations = [];
+                for ($j = 0; $j < $batchSize; $j++) {
+                    $operations[] = [
                         'uuid' => Str::uuid(),
-                        'operation_uuid' => $operationUuid,
-                        'number' => $j,
+                        'number' => $operationNumber,
                         'name' => Str::random(rand(4, 10)),
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
+                    $operationNumber++;
                 }
-
-                // Insert in batches of 1000 to optimize performance
-                // After every 1000 operations and 10000 suboperations, the collected data is inserted into the database in a single query to reduce the number of database interactions.
-                if (count($operations) >= 1000) {
-                    Operation::insert($operations);
-                    $operations = [];
-                }
-                if (count($suboperations) >= 10000) {
-                    Suboperation::insert($suboperations);
-                    $suboperations = [];
-                }
-            }
-
-            // Insert any remaining operations and suboperations. Any remaining operations and suboperations are inserted at the end of the loop.
-            if (!empty($operations)) {
                 Operation::insert($operations);
+                unset($operations); // Clear memory
             }
-            if (!empty($suboperations)) {
-                Suboperation::insert($suboperations);
-            }
+
+            // Step 2: Generate and insert suboperations in chunks
+            Operation::select('uuid')->chunk($batchSize, function ($operations) use ($batchSize) {
+                foreach ($operations as $operation) {
+                    $suboperationsCount = rand(1, 10);
+                    $suboperations = [];
+                    for ($j = 1; $j <= $suboperationsCount; $j++) {
+                        $suboperations[] = [
+                            'uuid' => Str::uuid(),
+                            'operation_uuid' => $operation->uuid,
+                            'number' => $j,
+                            'name' => Str::random(rand(4, 10)),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                    Suboperation::insert($suboperations);
+                    unset($suboperations); // Clear memory
+                }
+            });
         });
 
         $endTime = microtime(true);
