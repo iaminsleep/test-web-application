@@ -6,7 +6,7 @@ const App: React.FC = () => {
   return (
     <Container>
       <Typography variant="h2" component="h1" gutterBottom>
-        Operations Admin Panel
+        Operations Admin Panelddfd
       </Typography>
       <OperationList />
     </Container>

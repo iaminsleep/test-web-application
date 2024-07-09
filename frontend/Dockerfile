@@ -3,7 +3,7 @@
 FROM node:16-alpine as build
 
 # Устанавливаем рабочую директорию
-WORKDIR /app
+WORKDIR /var/www/front
 
 # Копируем package.json и package-lock.json для установки зависимостей
 COPY package*.json ./
@@ -12,14 +12,11 @@ COPY package*.json ./
 RUN npm install
 
 # Копируем все файлы приложения
-COPY . .
+COPY . ./
 
 # Собираем приложение
 RUN npm run build
 
 EXPOSE 3000
 
-FROM nginx
-
-COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
+CMD ["npm", "start"]
