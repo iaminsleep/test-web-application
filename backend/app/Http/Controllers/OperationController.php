@@ -11,11 +11,21 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 class OperationController extends Controller
 {
     public function index(): JsonResponse
     {
-        $operations = Operation::with('suboperations')->get();
+        // Log query execution for debugging
+        DB::listen(function ($query) {
+            Log::channel('testing')->info($query->sql, $query->bindings, $query->time);
+        });
+
+        // Limit the number of records and columns retrieved
+        $operations = Operation::paginate(10); // Limit to 10 records per page
+
         return response()->json($operations);
     }
 

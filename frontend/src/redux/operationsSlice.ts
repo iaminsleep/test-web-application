@@ -1,81 +1,67 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../services/api';
-
-interface Operation {
-  uuid: string;
-  number: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
+import { RootState } from './store';
+import { Operation } from '../types/operation';
 
 interface OperationsState {
-  items: Operation[];
-  loading: boolean;
-  error: string | null;
-  filters: {
-    [key: string]: any;
-  };
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-  };
+    operations: Operation[];
+    currentPage: number;
+    totalPages: number;
+    status: 'idle' | 'loading' | 'succeeded' | 'failed';
+    error: string | null;
 }
 
 const initialState: OperationsState = {
-  items: [],
-  loading: false,
-  error: null,
-  filters: {},
-  pagination: {
-    page: 1,
-    limit: 10,
-    total: 0,
-  },
+    operations: [],
+    currentPage: 1,
+    totalPages: 0,
+    status: 'idle',
+    error: null,
 };
 
 export const fetchOperations = createAsyncThunk(
-  'operations/fetchOperations',
-  async (_, { getState }) => {
-    const state = getState() as { operations: OperationsState };
-    const { filters, pagination } = state.operations;
-    const response = await api.get('/operations', {
-      params: { ...filters, page: pagination.page, limit: pagination.limit },
-    });
-    return response.data;
-  }
+    'operations/fetchOperations',
+    async (page: number = 1) => {
+        const response = await axios.get(`http://localhost/api/operations?page=${page}`);
+        return response.data;
+    }
 );
 
 const operationsSlice = createSlice({
-  name: 'operations',
-  initialState,
-  reducers: {
-    setFilter: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
+    name: 'operations',
+    initialState,
+    reducers: {
+        resetOperations(state) {
+            state.operations = [];
+            state.currentPage = 1;
+            state.totalPages = 0;
+            state.status = 'idle';
+            state.error = null;
+        },
+        setCurrentPage(state, action: PayloadAction<number>) {
+            state.currentPage = action.payload;
+        }
     },
-    setPagination: (state, action) => {
-      state.pagination = { ...state.pagination, ...action.payload };
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchOperations.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchOperations.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.operations = action.payload.data;
+                state.currentPage = action.payload.current_page;
+                state.totalPages = action.payload.last_page;
+            })
+            .addCase(fetchOperations.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message || 'Something went wrong';
+            });
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchOperations.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchOperations.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload.items;
-        state.pagination.total = action.payload.total;
-      })
-      .addCase(fetchOperations.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to fetch operations';
-      });
-  },
 });
 
-export const { setFilter, setPagination } = operationsSlice.actions;
+export const { resetOperations, setCurrentPage } = operationsSlice.actions;
+
+export const selectOperations = (state: RootState) => state.operations;
 
 export default operationsSlice.reducer;

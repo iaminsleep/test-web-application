@@ -10,10 +10,10 @@ services:
         container_name: frontend
         restart: unless-stopped
         volumes:
-            - ./frontend/src:/var/www/front/src
-            - ./frontend/public:/var/www/front/public
+            - ./frontend:/var/www/front
+            - /var/www/front/node_modules
         environment:
-            - CHOKIDAR_USEPOLLING = true
+            - CHOKIDAR_USEPOLLING=true
         ports:
             - "3000:80"
         networks:

@@ -7,7 +7,6 @@ use App\Http\Controllers\OperationController;
 
 use App\Http\Controllers\SuboperationController;
 
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -18,10 +17,6 @@ use App\Http\Controllers\SuboperationController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
 Route::prefix('operations')->group(function () {
     Route::get('/', [OperationController::class, 'index']);

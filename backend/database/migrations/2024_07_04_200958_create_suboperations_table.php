@@ -13,8 +13,11 @@ return new class () extends Migration {
         Schema::create('suboperations', function (Blueprint $table) {
             $table->uuid()->primary();
 
-            $table->uuid('operation_uuid');
-            $table->foreign('operation_uuid')->references('uuid')->on('operations')->onDelete('cascade');
+            $table->uuid('operation_uuid')->index();
+            $table->foreign('operation_uuid')
+                ->references('uuid')
+                ->on('operations')
+                ->onDelete('cascade');
             $table->integer('number');
 
             $table->string('name');

@@ -1,16 +1,20 @@
 import React from 'react';
-import OperationList from './components/OperationList';
-import { Container, Typography } from '@mui/material';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Container } from '@mui/material';
+import OperationsPage from './pages/OperationsPage';
+import OperationDetails from './pages/OperationsDetails';
 
 const App: React.FC = () => {
-  return (
-    <Container>
-      <Typography variant="h2" component="h1" gutterBottom>
-        Operations Admin Panelddfd
-      </Typography>
-      <OperationList />
-    </Container>
-  );
+    return (
+        <Router>
+            <Container>
+                <Routes>
+                    <Route path="/" element={<OperationsPage />} />
+                    <Route path="/operations/:uuid" element={<OperationDetails />} />
+                </Routes>
+            </Container>
+        </Router>
+    );
 };
 
 export default App;
