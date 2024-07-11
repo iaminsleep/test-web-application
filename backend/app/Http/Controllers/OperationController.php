@@ -35,7 +35,7 @@ class OperationController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        // После валидации создаем новую операцию
+        // Create new operation after validation
 
         $operation = Operation::create([
             'uuid' => (string) Str::uuid(),
@@ -59,7 +59,7 @@ class OperationController extends Controller
     }
 
     /**
-     * Получить операцию по UUID.
+     *
      *
      * @param  string  $uuid
      * @return JsonResponse
@@ -71,7 +71,7 @@ class OperationController extends Controller
     }
 
     /**
-     * Обновить операцию.
+     *
      *
      * @param  Request  $request
      * @param  string  $uuid
@@ -93,18 +93,18 @@ class OperationController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        // Обновляем операцию
+        // Update
         $operation->update($validated);
 
         $operationDTO = new OperationDTO($operation->toArray());
 
-        // Возвращаем успешный ответ
+        // Return success response
         return response()->json($operationDTO, 200);
 
     }
 
     /**
-     * Удалить операцию мягко.
+     * Soft Delete
      *
      * @param  string  $uuid
      * @return JsonResponse
@@ -122,7 +122,7 @@ class OperationController extends Controller
     }
 
     /**
-     * Удалить операцию полностью.
+     * Hard Delete
      *
      * @param  string  $uuid
      * @return JsonResponse

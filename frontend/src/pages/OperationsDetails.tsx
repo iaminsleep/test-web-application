@@ -1,13 +1,18 @@
+// src/components/OperationDetails.tsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import axios from 'axios';
 import { Operation } from '../types/operation';
-import { CircularProgress, Typography } from '@mui/material';
+import { CircularProgress, Typography, Button } from '@mui/material';
+import { saveOperations } from '../redux/operationsSlice';
 
 const OperationDetails: React.FC = () => {
     const { uuid } = useParams<{ uuid: string }>();
     const [operation, setOperation] = useState<Operation | null>(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const fetchOperation = async () => {
@@ -24,6 +29,11 @@ const OperationDetails: React.FC = () => {
         fetchOperation();
     }, [uuid]);
 
+    const handleBackClick = () => {
+        dispatch(saveOperations());
+        navigate('/');
+    };
+
     if (loading) {
         return <CircularProgress />;
     }
@@ -34,7 +44,10 @@ const OperationDetails: React.FC = () => {
 
     return (
         <div>
-            <Typography variant="h4">{operation.name}</Typography>
+            <Button onClick={handleBackClick} variant="contained" color="primary">
+                Back
+            </Button>
+            <Typography variant="h4">Name: {operation.name}</Typography>
             <Typography variant="subtitle1">Number: {operation.number}</Typography>
             <Typography variant="subtitle1">
                 Created At: {new Date(operation.created_at).toLocaleString()}

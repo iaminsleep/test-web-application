@@ -21,7 +21,7 @@ class SuboperationController extends Controller
     }
 
     /**
-     * Создать новую подоперацию для указанной операции.
+     *
      *
      * @param  Request  $request
      * @param  string  $operationUuid
@@ -33,7 +33,7 @@ class SuboperationController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        // После валидации создаем новую операцию
+        // After validation create new operation
 
         $suboperation = Suboperation::create([
             'uuid' => (string) Str::uuid(),
@@ -53,7 +53,7 @@ class SuboperationController extends Controller
             'deleted_at' => $suboperation->deleted_at ? $suboperation->deleted_at->toDateTimeString() : null,
         ]);
 
-        // Возвращаем успешный ответ
+        // Return 201
         return response()->json($suboperationDTO, 201);
     }
 
@@ -118,7 +118,7 @@ class SuboperationController extends Controller
     }
 
     /**
-     * Генерировать уникальный номер для подоперации в рамках операции.
+     * Generate unique number for suboperation
      *
      * @param  string  $operationUuid
      * @return int

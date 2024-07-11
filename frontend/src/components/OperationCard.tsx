@@ -1,5 +1,8 @@
+// src/components/OperationCard.tsx
 import React from 'react';
-import { Card, CardContent, Typography, CardActionArea } from '@mui/material';
+import { Card, CardContent, Typography, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { Operation } from '../types/operation';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,27 +12,28 @@ interface OperationCardProps {
 
 const OperationCard: React.FC<OperationCardProps> = ({ operation }) => {
     const navigate = useNavigate();
-
     const handleClick = () => {
         navigate(`/operations/${operation.uuid}`);
     };
-
+    
     return (
-        <Card>
-            <CardActionArea onClick={handleClick}>
-                <CardContent>
-                    <Typography variant="h5">{operation.name}</Typography>
-                    <Typography color="textSecondary">
-                        Number: {operation.number}
-                    </Typography>
-                    <Typography color="textSecondary">
-                        Created At: {new Date(operation.created_at).toLocaleString()}
-                    </Typography>
-                    <Typography color="textSecondary">
-                        Updated At: {new Date(operation.updated_at).toLocaleString()}
-                    </Typography>
-                </CardContent>
-            </CardActionArea>
+        <Card className="card">
+            <CardContent>
+                <Typography variant="h5" onClick={handleClick}>
+                    {operation.name}
+                </Typography>
+                <Typography variant="body2">Number: {operation.number}</Typography>
+                <Typography variant="body2">Created At: {operation.created_at}</Typography>
+                <Typography variant="body2">Updated At: {operation.updated_at}</Typography>
+                <div className="card-actions">
+                    <IconButton>
+                        <EditIcon />
+                    </IconButton>
+                    <IconButton>
+                        <DeleteIcon />
+                    </IconButton>
+                </div>
+            </CardContent>
         </Card>
     );
 };

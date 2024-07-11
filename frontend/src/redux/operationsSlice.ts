@@ -1,3 +1,4 @@
+// src/redux/operationsSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { RootState } from './store';
@@ -9,6 +10,8 @@ interface OperationsState {
     totalPages: number;
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
+    filter: string;
+    savedOperations: Operation[];
 }
 
 const initialState: OperationsState = {
@@ -17,12 +20,15 @@ const initialState: OperationsState = {
     totalPages: 0,
     status: 'idle',
     error: null,
+    filter: '',
+    savedOperations: [],
 };
 
 export const fetchOperations = createAsyncThunk(
     'operations/fetchOperations',
-    async (page: number = 1) => {
-        const response = await axios.get(`http://localhost/api/operations?page=${page}`);
+    async (page: number = 1, { getState }) => {
+        const state = getState() as RootState;
+        const response = await axios.get(`http://localhost/api/operations?page=${page}&filter=${state.operations.filter}`);
         return response.data;
     }
 );
@@ -40,7 +46,16 @@ const operationsSlice = createSlice({
         },
         setCurrentPage(state, action: PayloadAction<number>) {
             state.currentPage = action.payload;
-        }
+        },
+        setFilter(state, action: PayloadAction<string>) {
+            state.filter = action.payload;
+        },
+        saveOperations(state) {
+            state.savedOperations = state.operations;
+        },
+        restoreOperations(state) {
+            state.operations = state.savedOperations;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -60,7 +75,7 @@ const operationsSlice = createSlice({
     },
 });
 
-export const { resetOperations, setCurrentPage } = operationsSlice.actions;
+export const { resetOperations, setCurrentPage, setFilter, saveOperations, restoreOperations } = operationsSlice.actions;
 
 export const selectOperations = (state: RootState) => state.operations;
 
