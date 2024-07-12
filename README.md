@@ -1,6 +1,15 @@
 # Operations Management System
 
-This project is an Operations Management System that allows users to manage operations and their associated suboperations. The system includes functionalities for creating, updating, deleting (soft and hard deletes), and retrieving operations and suboperations. The application has a frontend built with Node.js and a backend using PHP with Laravel, interfacing with a PostgreSQL database.
+This project is an Operations Management System that allows users to manage operations and their associated suboperations. The system includes functionalities for creating, updating, deleting (soft and hard deletes), and retrieving operations and suboperations. The application consists of a client built with Node.js, a backend server using PHP with Laravel, and utilizes NGINX as the web server, interfacing with a PostgreSQL database.
+
+## Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+-   **Docker** and **Docker Compose** installed on your computer.
+-   **Node.js** (version 16) installed.
+-   **PHP** (version 8.1) installed.
+-   **PostgreSQL** (version 14.2) installed.
 
 ## Running the Project
 
@@ -12,13 +21,51 @@ To run the project locally using Docker, follow these steps:
     docker-compose up --build
 ```
 
-2. **Run tests for the backend:**
+2. **Run tests for the server:**
 
 ```bash
+    docker exec -it backend php artisan migrate:fresh
     docker exec -it backend php artisan test
 ```
 
-3. **Now your app is available at 'http://localhost/'**
+3. **Now your client is available at 'http://localhost:80/' and server at 'http://localhost:80/api/'**
+
+4. **Run console command that will generate 100,000 operations**
+
+```bash
+    docker exec -it backend php artisan generate:operations
+    docker exec -it backend php artisan paginate:operations
+```
+
+5. **Run console command that will paginate generated operations**
+
+```bash
+    docker exec -it backend php artisan paginate:operations
+```
+
+6. **Lastly, run console command that will delete all operations**
+
+```bash
+    docker exec -it backend php artisan delete:all-operations
+```
+
+## API Endpoints
+
+### Operations
+
+-   **GET /api/operations**: Retrieve a list of operations.
+-   **POST /api/operations**: Create a new operation.
+-   **PUT /api/operations/{uuid}**: Update an operation.
+-   **DELETE /api/operations/{uuid}**: Soft delete an operation.
+-   **DELETE /api/operations/{uuid}/force**: Hard delete an operation.
+
+### Suboperations
+
+-   **GET /api/operations/{operationUuid}/suboperations**: Retrieve suboperations for a specific operation.
+-   **POST /api/suboperations**: Create a new suboperation.
+-   **PUT /api/suboperations/{uuid}**: Update a suboperation.
+-   **DELETE /api/suboperations/{uuid}**: Soft delete a suboperation.
+-   **DELETE /api/suboperations/{uuid}/force**: Hard delete a suboperation.
 
 ## Contributing
 
