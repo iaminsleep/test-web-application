@@ -6,7 +6,7 @@ use App\Models\Operation;
 use App\Models\Suboperation;
 
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase; // for development stage, not production
 
 class SuboperationControllerTest extends TestCase
 {
@@ -17,7 +17,7 @@ class SuboperationControllerTest extends TestCase
         // Arrange
         $operation = Operation::factory()->create();
 
-        $suboperationsCount = 10; // You can change this to any number
+        $suboperationsCount = 10; // change this to any number
 
         // Create suboperations for the created operation
         $this->createSuboperationsForOperation($operation->uuid, $suboperationsCount);
@@ -111,7 +111,7 @@ class SuboperationControllerTest extends TestCase
         $response = $this->deleteJson("/api/operations/{$operation->uuid}/suboperations/{$suboperation->uuid}");
 
         // Assert
-        $response->assertStatus(204);
+        $response->assertStatus(200);
         $this->assertSoftDeleted('suboperations', ['uuid' => $suboperation->uuid]);
     }
 

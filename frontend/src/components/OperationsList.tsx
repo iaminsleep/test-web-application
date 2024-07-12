@@ -1,93 +1,37 @@
 // src/components/OperationsList.tsx
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Grid, CircularProgress, Pagination, TextField, Box } from '@mui/material';
-import { AppDispatch, RootState } from '../redux/store';
-import { fetchOperations, setCurrentPage, setFilter, restoreOperations } from '../redux/operationsSlice';
+import React from 'react';
+import { Grid, CircularProgress, Typography } from '@mui/material';
 import OperationCard from './OperationCard';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
 
 const OperationsList: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { operations, currentPage, totalPages, status, savedOperations } = useSelector((state: RootState) => state.operations);
-    const [filterText, setFilterText] = useState('');
-    const [nameFilter, setNameFilter] = useState('');
-    const [numberFilter, setNumberFilter] = useState('');
-
-    useEffect(() => {
-        if (savedOperations.length === 0) {
-            dispatch(fetchOperations(currentPage));
-        } else {
-            dispatch(restoreOperations());
-        }
-    }, [dispatch, currentPage, savedOperations.length]);
-
-    const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
-        dispatch(setCurrentPage(page));
-    };
-
-    const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setFilterText(event.target.value);
-        dispatch(setFilter(event.target.value));
-        dispatch(fetchOperations(currentPage));
-    };
-
-    const handleNameFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNameFilter(event.target.value);
-        dispatch(setFilter(event.target.value));
-        dispatch(fetchOperations(currentPage));
-    };
-
-    const handleNumberFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNumberFilter(event.target.value);
-        dispatch(setFilter(event.target.value));
-        dispatch(fetchOperations(currentPage));
-    };
+    const { operations, status, filters } = useSelector((state: RootState) => state.operations);
 
     if (status === 'loading') {
-        return <CircularProgress />;
+        return <div style={{ display: 'inline-block', verticalAlign: 'top', alignItems: 'start', width: '1176px', height:'984px', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px'}}><h3>Loading...</h3></div>
+            <div style={{ display: 'flex', justifyContent: 'center'}}>
+                <CircularProgress />
+            </div>
+        </div>;
+    }
+
+    if (status === 'failed') {
+        return <div>
+            <Typography variant="h6">Operations not found</Typography>
+        </div>
     }
 
     return (
         <div>
-            <Box mb={2}>
-                <TextField
-                    label="Filter Operations"
-                    variant="outlined"
-                    fullWidth
-                    value={filterText}
-                    onChange={handleFilterChange}
-                />
-                <TextField
-                    label="Filter by Name"
-                    variant="outlined"
-                    fullWidth
-                    value={nameFilter}
-                    onChange={handleNameFilterChange}
-                    style={{ marginTop: '16px' }}
-                />
-                <TextField
-                    label="Filter by Number"
-                    variant="outlined"
-                    fullWidth
-                    value={numberFilter}
-                    onChange={handleNumberFilterChange}
-                    style={{ marginTop: '16px' }}
-                />
-            </Box>
             <Grid container spacing={3}>
                 {operations.map((operation) => (
                     <Grid item key={operation.uuid} xs={12} sm={6} md={4}>
-                        <OperationCard operation={operation} />
+                        <OperationCard operation={operation} filters={filters} />
                     </Grid>
                 ))}
             </Grid>
-            <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                color="primary"
-                style={{ marginTop: '16px' }}
-            />
         </div>
     );
 };

@@ -42,5 +42,13 @@ class Operation extends Model
                 $operation->number = Operation::max('number') + 1;
             }
         });
+
+        static::deleting(function ($operation) {
+            if ($operation->isForceDeleting()) {
+                $operation->suboperations()->forceDelete();
+            } else {
+                $operation->suboperations()->delete();
+            }
+        });
     }
 }

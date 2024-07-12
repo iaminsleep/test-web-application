@@ -16,7 +16,7 @@ class SuboperationController extends Controller
 {
     public function index($operationUuid): JsonResponse
     {
-        $suboperations = Suboperation::where('operation_uuid', $operationUuid)->get();
+        $suboperations = Suboperation::withTrashed()->where('operation_uuid', $operationUuid)->get();
         return response()->json($suboperations);
     }
 
@@ -94,22 +94,27 @@ class SuboperationController extends Controller
         $suboperation = Suboperation::where('operation_uuid', $operationUuid)->findOrFail($suboperationUuid);
         $suboperation->delete();
 
-        // Check if operation should be deleted AS WELL
-        $operation = Operation::findOrFail($operationUuid);
-        if ($operation->suboperations()->withTrashed()->count() === 0) {
+        // Check if there are any active (non-deleted) suboperations
+        $activeSuboperationsCount = Suboperation::where('operation_uuid', $operationUuid)
+            ->whereNull('deleted_at')
+            ->count();
+
+        if ($activeSuboperationsCount === 0) {
+            // Soft delete the operation if there are no active suboperations
+            $operation = Operation::findOrFail($operationUuid);
             $operation->delete();
         }
 
-        return response()->json(null, 204);
+        return response()->json($suboperationUuid, 200);
     }
 
     public function forceDestroy(string $operationUuid, string $suboperationUuid)
     {
-        $suboperation = Suboperation::where('operation_uuid', $operationUuid)->findOrFail($suboperationUuid);
+        $suboperation = Suboperation::withTrashed()->where('operation_uuid', $operationUuid)->findOrFail($suboperationUuid);
         $suboperation->forceDelete();
 
         // Check if operation should be soft deleted AS WELL
-        $operation = Operation::findOrFail($operationUuid);
+        $operation = Operation::withTrashed()->findOrFail($operationUuid);
         if ($operation->suboperations()->count() === 0) {
             $operation->forceDelete();
         }
@@ -125,7 +130,7 @@ class SuboperationController extends Controller
      */
     private function generateUniqueNumberForOperation(string $operationUuid): int
     {
-        $maxNumber = Suboperation::where('operation_uuid', $operationUuid)->max('number');
+        $maxNumber = Suboperation::where('operation_uuid', $operationUuid)->withTrashed()->max('number');
         return is_null($maxNumber) ? 1 : $maxNumber + 1;
     }
 }

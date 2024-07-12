@@ -20,6 +20,7 @@ use App\Http\Controllers\SuboperationController;
 
 Route::prefix('operations')->group(function () {
     Route::get('/', [OperationController::class, 'index']);
+    Route::get('/search', [OperationController::class, 'search']);
     Route::post('/', [OperationController::class, 'store']);
     Route::get('{uuid}', [OperationController::class, 'show']);
     Route::put('{uuid}', [OperationController::class, 'update']);

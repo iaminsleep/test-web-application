@@ -1,9 +1,12 @@
+// src/redux/store.ts
 import { configureStore } from '@reduxjs/toolkit';
 import operationsReducer from './operationsSlice';
+import suboperationsReducer from './suboperationsSlice';
 
 export const store = configureStore({
     reducer: {
         operations: operationsReducer,
+        suboperations: suboperationsReducer,
     },
 });
 

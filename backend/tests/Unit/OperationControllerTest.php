@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase; // for development stage, not production
 
 use App\Models\Operation;
 use App\Models\Suboperation;
@@ -14,18 +14,17 @@ use Illuminate\Support\Str;
 class OperationControllerTest extends TestCase
 {
     use RefreshDatabase;
-
     public function testIndex()
     {
         // Arrange
-        Operation::factory()->count(3)->create();
+        Operation::factory()->count(13)->create();
 
         // Act
         $response = $this->getJson('/api/operations');
 
         // Assert
         $response->assertStatus(200);
-        $response->assertJsonCount(3);
+        $response->assertJsonCount(13);
     }
 
     public function testStore()
@@ -81,7 +80,7 @@ class OperationControllerTest extends TestCase
         $response = $this->deleteJson("/api/operations/{$operation->uuid}");
 
         // Assert
-        $response->assertStatus(204);
+        $response->assertStatus(200);
         $this->assertSoftDeleted('operations', ['uuid' => $operation->uuid]);
     }
 
@@ -96,5 +95,54 @@ class OperationControllerTest extends TestCase
         // Assert
         $response->assertStatus(204);
         $this->assertDatabaseMissing('operations', ['uuid' => $operation->uuid]);
+    }
+
+    /** @test */
+    public function it_can_filter_operations_by_name()
+    {
+        // Arrange
+        Operation::factory()->create(['name' => 'Test Operation']);
+        Operation::factory()->create(['name' => 'Another Operation']);
+
+        // Act
+        $response = $this->getJson('/api/operations/search?name=Test');
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['name' => 'Test Operation']);
+        $response->assertJsonMissing(['name' => 'Another Operation']);
+    }
+
+    /** @test */
+    public function it_can_filter_operations_by_number()
+    {
+        // Arrange
+        Operation::factory()->create(['number' => 123]);
+        Operation::factory()->create(['number' => 456]);
+
+        // Act
+        $response = $this->getJson('/api/operations/search?number=123');
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['number' => 123]);
+        $response->assertJsonMissing(['number' => 456]);
+    }
+
+    /** @test */
+    public function it_can_filter_operations_by_name_and_number()
+    {
+        // Arrange
+        Operation::factory()->create(['name' => 'Test Operation', 'number' => 123]);
+        Operation::factory()->create(['name' => 'Another Operation', 'number' => 456]);
+
+        // Act
+        $response = $this->getJson('/api/operations/search?name=Test&number=123');
+
+        // Assert
+        $response->assertStatus(200);
+        $response->assertJsonFragment(['name' => 'Test Operation', 'number' => 123]);
+        $response->assertJsonMissing(['name' => 'Another Operation']);
+        $response->assertJsonMissing(['number' => 456]);
     }
 }

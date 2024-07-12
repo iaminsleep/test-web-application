@@ -24,7 +24,35 @@ class OperationController extends Controller
         });
 
         // Limit the number of records and columns retrieved
-        $operations = Operation::paginate(10); // Limit to 10 records per page
+        $operations = Operation::orderBy('number')->paginate(12); // Limit to 10 records per page
+
+        return response()->json($operations);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        // Retrieve query parameters
+        $name = $request->query('name');
+        $number = $request->query('number');
+
+        // Build query
+        $query = Operation::query();
+
+        if ($name) {
+            $query->where('name', 'LIKE', "%{$name}%");
+        }
+
+        if ($number) {
+            $query->where('number', 'LIKE', "%{$number}%");
+        }
+
+        if ($request->has('deleted') && $request->get('deleted') === 'true') {
+            $query->onlyTrashed(); // Only soft deleted records
+        }
+
+
+        // Limit the number of records and columns retrieved
+        $operations = $query->orderBy('number')->paginate(12);
 
         return response()->json($operations);
     }
@@ -39,7 +67,7 @@ class OperationController extends Controller
 
         $operation = Operation::create([
             'uuid' => (string) Str::uuid(),
-            'number' => $request->number,
+            'number' => $this->generateUniqueNumber(),
             'name' => $request->name,
             'created_at' => now(),
             'updated_at' => now(),
@@ -66,7 +94,7 @@ class OperationController extends Controller
      */
     public function show(string $uuid): JsonResponse
     {
-        $operation = Operation::with('suboperations')->findOrFail($uuid);
+        $operation = Operation::withTrashed()->with('suboperations')->findOrFail($uuid);
         return response()->json($operation);
     }
 
@@ -82,14 +110,14 @@ class OperationController extends Controller
         $operation = Operation::findOrFail($uuid);
 
         $validated = $request->validate([
-            'number' => [
-                'required',
-                'integer',
-                'min:1',
-                Rule::unique('operations')->ignore($operation->uuid, 'uuid')->where(function ($query) {
-                    return $query->whereNull('deleted_at');
-                }), // Обновление поля number проверяет уникальность, исключая текущую запись по uuid.
-            ],
+            // 'number' => [
+            //     'required',
+            //     'integer',
+            //     'min:1',
+            //     Rule::unique('operations')->ignore($operation->uuid, 'uuid')->where(function ($query) {
+            //         return $query->whereNull('deleted_at');
+            //     }), // Обновление поля number проверяет уникальность, исключая текущую запись по uuid.
+            // ],
             'name' => 'required|string|max:255',
         ]);
 
@@ -100,7 +128,6 @@ class OperationController extends Controller
 
         // Return success response
         return response()->json($operationDTO, 200);
-
     }
 
     /**
@@ -113,12 +140,8 @@ class OperationController extends Controller
     {
         $operation = Operation::with('suboperations')->findOrFail($uuid);
 
-        if ($operation->suboperations()->withTrashed()->count() > 0) {
-            return response()->json(['error' => 'Operation cannot be permanently deleted because it has suboperations'], 400);
-        }
-
         $operation->delete(); // Perform soft delete instead of force delete
-        return response()->json(null, 204);
+        return response()->json($uuid, 200);
     }
 
     /**
@@ -129,7 +152,7 @@ class OperationController extends Controller
      */
     public function forceDestroy(string $uuid): JsonResponse
     {
-        $operation = Operation::with('suboperations')->findOrFail($uuid);
+        $operation = Operation::withTrashed()->with('suboperations')->findOrFail($uuid);
 
         if ($operation->suboperations()->withTrashed()->count() > 0) {
             return response()->json(['error' => 'Operation cannot be permanently deleted because it has suboperations'], 400);
@@ -137,5 +160,12 @@ class OperationController extends Controller
 
         $operation->forceDelete(); // Perform hard delete
         return response()->json(null, 204);
+    }
+
+
+    private function generateUniqueNumber(): int
+    {
+        $maxNumber = Operation::withTrashed()->max('number');
+        return is_null($maxNumber) ? 1 : $maxNumber + 1;
     }
 }
