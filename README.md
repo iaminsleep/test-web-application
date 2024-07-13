@@ -21,29 +21,39 @@ To run the project locally using Docker, follow these steps:
     docker-compose up --build
 ```
 
-2. **Run tests for the server:**
+2. **Download composer dependecies:**
+
+```bash
+    docker exec -it backend composer install
+```
+
+3. **Run Laravel Migrations:**
 
 ```bash
     docker exec -it backend php artisan migrate:fresh
+```
+
+4. **Run tests for the server:**
+
+```bash
     docker exec -it backend php artisan test
 ```
 
-3. **Now your client is available at 'http://localhost:80/' and server at 'http://localhost:80/api/'**
+5. **Now your client is available at 'http://localhost:80/' and server at 'http://localhost:80/api/'**
 
-4. **Run console command that will generate 100,000 operations**
+6. **Run console command that will generate 100,000 operations**
 
 ```bash
     docker exec -it backend php artisan generate:operations
-    docker exec -it backend php artisan paginate:operations
 ```
 
-5. **Run console command that will paginate generated operations**
+7. **Run console command that will paginate generated operations**
 
 ```bash
     docker exec -it backend php artisan paginate:operations
 ```
 
-6. **Lastly, run console command that will delete all operations**
+8. **Lastly, run console command that will delete all operations**
 
 ```bash
     docker exec -it backend php artisan delete:all-operations
