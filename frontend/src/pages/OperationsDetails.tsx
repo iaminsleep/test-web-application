@@ -67,6 +67,10 @@ const OperationDetails: React.FC = () => {
         navigate(`/operations/${operation!.uuid}/edit`);
     };
 
+    const redirectToCreatePage = () => {
+        navigate(`/operations/${operation!.uuid}/create`);
+    };
+
     if (loading) {
         return <div>
             <Button onClick={handleBackClick} variant="contained" color="primary">
@@ -97,6 +101,9 @@ const OperationDetails: React.FC = () => {
             <Button onClick={handleBackClick} variant="contained" color="primary">
                 Back
             </Button>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button onClick={redirectToCreatePage}>Create Suboperation</Button>
+            </div>
             <div>
                 <div style={{ display: 'inline-block', verticalAlign: 'top'}}>
                     <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Operation: </h2>

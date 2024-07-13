@@ -28,9 +28,21 @@ export const fetchSuboperations = createAsyncThunk(
 
 export const createSuboperation = createAsyncThunk(
     'suboperations/createSuboperation',
-    async (data: { name: string; operationId: string }, { rejectWithValue }) => {
+    async (data: { name: string; operationUuid: string }, { rejectWithValue }) => {
         try {
-            const response = await axios.post('http://localhost/api/suboperations', data );
+            const response = await axios.post(`http://localhost/api/operations/${data.operationUuid}/suboperations`, data );
+            return response.data;
+        } catch (err: any) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
+export const updateSuboperation = createAsyncThunk(
+    'suboperations/updateSuboperation',
+    async ({ suboperationUuid, operationUuid, name }: { suboperationUuid: string; operationUuid: string; name: string }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`http://localhost/api/operations/${operationUuid}/suboperations/${suboperationUuid}`, { name });
             return response.data;
         } catch (err: any) {
             return rejectWithValue(err.response.data);
@@ -56,18 +68,6 @@ export const forceDeleteSuboperation = createAsyncThunk(
         try {
             await axios.delete(`http://localhost/api/operations/${operationUuid}/suboperations/${suboperationUuid}/force`);
             return suboperationUuid;
-        } catch (err: any) {
-            return rejectWithValue(err.response.data);
-        }
-    }
-);
-
-export const updateSuboperation = createAsyncThunk(
-    'suboperations/updateSuboperation',
-    async ({ suboperationUuid, operationUuid, name }: { suboperationUuid: string; operationUuid: string; name: string }, { rejectWithValue }) => {
-        try {
-            const response = await axios.put(`http://localhost/api/operations/${operationUuid}/suboperations/${suboperationUuid}`, { name });
-            return response.data;
         } catch (err: any) {
             return rejectWithValue(err.response.data);
         }

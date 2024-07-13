@@ -67,20 +67,19 @@ class SuboperationController extends Controller
 
     public function update(Request $request, string $operationUuid, string $suboperationUuid): JsonResponse
     {
-        $operation = Operation::findOrFail($operationUuid);
         $suboperation = Suboperation::where('operation_uuid', $operationUuid)->findOrFail($suboperationUuid);
 
         $validated = $request->validate([
-            'number' => [
-                'required',
-                'integer',
-                'min:1',
-                Rule::unique('suboperations')->where(function ($query) use ($operation, $suboperation) {
-                    return $query->where('operation_uuid', $operation->uuid)
-                                 ->where('uuid', '!=', $suboperation->uuid)
-                                 ->whereNull('deleted_at');
-                }),
-            ],
+            // 'number' => [
+            //     'required',
+            //     'integer',
+            //     'min:1',
+            //     Rule::unique('suboperations')->where(function ($query) use ($operation, $suboperation) {
+            //         return $query->where('operation_uuid', $operation->uuid)
+            //                      ->where('uuid', '!=', $suboperation->uuid)
+            //                      ->whereNull('deleted_at');
+            //     }),
+            // ],
             'name' => 'required|string|max:255',
         ]);
 

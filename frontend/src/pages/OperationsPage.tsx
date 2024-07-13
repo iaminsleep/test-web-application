@@ -50,10 +50,6 @@ const OperationsPage: React.FC = () => {
         navigate('/operations/create');
     };
 
-    const redirectToRecycleBin = () => {
-        navigate('/recycleBin');
-    };
-
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
         if (reason === 'clickaway') {
             return;

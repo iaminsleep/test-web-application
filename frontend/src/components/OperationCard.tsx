@@ -35,7 +35,6 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, filters }) => 
         navigate(`/operations/${operation.uuid}/edit`);
     };
     
-    
     return (
         <Card className="card">
             <CardContent>

@@ -29,7 +29,7 @@ const SuboperationCard: React.FC<Props> = ({ operationUuid, suboperation, filter
     };
 
     const handleEdit = () => {
-        navigate(`/operations/${suboperation.uuid}/edit`);
+        navigate(`suboperations/${suboperation.uuid}/edit`);
     };
     return (
         <Card>
